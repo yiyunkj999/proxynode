@@ -14,7 +14,7 @@ menu() {
     echo -e "${YELLOW} 1.${PLAIN} 更换软件源"
     echo -e "${YELLOW} 2.${PLAIN} 安装Docker"
     echo -e "${YELLOW} 3.${PLAIN} 开启Docker的IPv6"
-    echo -e "${YELLOW} 4.${PLAIN} 安装Proxynode节点"
+    echo -e "${YELLOW} 4.${PLAIN} 安装Proxynode节点(支持自定义端口+Docker登录)"
     echo -e "${YELLOW} 5.${PLAIN} 查看容器日志"
     echo -e "${YELLOW} 0.${PLAIN} 退出"
     echo ""
@@ -52,28 +52,58 @@ EOF
             menu
             ;;
         4)
-            docker rm -f proxynode >/dev/null 2>&1
+            clear
+            echo -e "${YELLOW}========== Docker 账号登录 ==========${PLAIN}"
+            # 输入Docker用户名
+            read -p "请输入 Docker 用户名：" DOCKER_USER
+            if [[ -z "$DOCKER_USER" ]]; then
+                echo -e "${RED}用户名不能为空！${PLAIN}"
+                sleep 2
+                menu
+            fi
+            
+            # 输入Docker密码（不显示明文）
+            echo -n "请输入 Docker 密码："
+            read -s DOCKER_PWD
+            echo ""
+            
+            # 执行登录
+            echo -e "\n${YELLOW}正在登录 Docker...${PLAIN}"
+            echo "$DOCKER_PWD" | docker login -u "$DOCKER_USER" --password-stdin
+            if [ $? -ne 0 ]; then
+                echo -e "${RED}Docker 登录失败！请检查账号密码${PLAIN}"
+                sleep 3
+                menu
+            fi
+            echo -e "${GREEN}Docker 登录成功！${PLAIN}"
+            
+            # 端口配置
             echo -e "\n${YELLOW}========== Proxynode 端口配置 ==========${PLAIN}"
-            echo -n -e "请输入需要映射的本地端口(默认 80)："
+            echo -n -e "请输入需要映射的本地端口(默认 2334)："
             read -r PORT
-            # 如果未输入，使用默认端口2334
-            [[ -z "$PORT" ]] && PORT="80"
-            # 校验端口是否为数字
+            [[ -z "$PORT" ]] && PORT="2334"
             if ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
                 echo -e "${RED}错误：端口必须是纯数字！${PLAIN}"
                 sleep 2
                 menu
             fi
+            
+            # 删除旧容器
+            docker rm -f proxynode >/dev/null 2>&1
+            
+            # 启动容器
             echo -e "\n${YELLOW}正在启动 proxynode，映射端口：${PORT}${PLAIN}"
             docker run -d \
               --name proxynode \
               --restart always \
               --log-opt max-size=2m \
               --log-opt max-file=1 \
-              -p "${PORT}:8080/tcp" \
+              -p "${PORT}:2334/tcp" \
+              -p "${PORT}:2334/udp" \
               yiyunkj888/proxynode:v1.0
-            echo -e "${GREEN}启动成功！映射端口：${PORT}${PLAIN}"
-            sleep 2
+              
+            echo -e "${GREEN}proxynode 启动成功！映射端口：${PORT}${PLAIN}"
+            sleep 3
             menu
             ;;
         5)
