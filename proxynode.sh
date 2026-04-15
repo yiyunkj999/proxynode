@@ -79,9 +79,9 @@ EOF
             
             # 端口配置
             echo -e "\n${YELLOW}========== Proxynode 端口配置 ==========${PLAIN}"
-            echo -n -e "请输入需要映射的本地端口(默认 2334)："
+            echo -n -e "请输入需要映射的本地端口(默认 80)："
             read -r PORT
-            [[ -z "$PORT" ]] && PORT="2334"
+            [[ -z "$PORT" ]] && PORT="80"
             if ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
                 echo -e "${RED}错误：端口必须是纯数字！${PLAIN}"
                 sleep 2
@@ -98,8 +98,8 @@ EOF
               --restart always \
               --log-opt max-size=2m \
               --log-opt max-file=1 \
-              -p "${PORT}:2334/tcp" \
-              -p "${PORT}:2334/udp" \
+              -p "${PORT}:8080/tcp" \
+              -p "${PORT}:8080/udp" \
               yiyunkj888/proxynode:v1.0
               
             echo -e "${GREEN}proxynode 启动成功！映射端口：${PORT}${PLAIN}"
