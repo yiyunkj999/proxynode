@@ -14,9 +14,9 @@ menu() {
     echo -e "${YELLOW} 1.${PLAIN} 更换软件源"
     echo -e "${YELLOW} 2.${PLAIN} 安装Docker"
     echo -e "${YELLOW} 3.${PLAIN} 开启Docker的IPv6"
-    echo -e "${YELLOW} 4.${PLAIN} 安装Proxynode节点(支持自定义端口+Docker登录)"
-    echo -e "${YELLOW} 5.${PLAIN} 查看容器日志"
-    echo -e "${YELLOW} 0.${PLAIN} 退出"
+    echo -e "${YELLOW} 4.${PLAIN} 安装Proxynode节点"
+    echo -e "${YELLOW} 5.${PLAIN} 查看Proxynode日志"
+    echo -e "${YELLOW} 0.${PLAIN} 退出菜单"
     echo ""
     echo -n -e "请选择操作 [0-5]："
     read -r num
