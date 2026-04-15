@@ -16,10 +16,11 @@ menu() {
     echo -e "${YELLOW} 3.${PLAIN} 开启Docker的IPv6"
     echo -e "${YELLOW} 4.${PLAIN} 安装Proxynode节点"
     echo -e "${YELLOW} 5.${PLAIN} 查看Proxynode日志"
-    echo -e "${YELLOW} 6.${PLAIN} 设置服务器SSH端口"
+    echo -e "${YELLOW} 6.${PLAIN} 修改自定义SSH端口"
+    echo -e "${YELLOW} 7.${PLAIN} 一键开启BBR加速"  # 新增菜单7
     echo -e "${YELLOW} 0.${PLAIN} 退出菜单"
     echo ""
-    echo -n -e "请选择操作 [0-6]："  # 修改范围为0-6
+    echo -n -e "请选择操作 [0-7]："  # 修改范围为0-7
     read -r num
 
     case "$num" in
@@ -111,7 +112,7 @@ EOF
             docker logs -f proxynode
             menu
             ;;
-        6)  # 新增：修改SSH端口
+        6)
             clear
             echo -e "${YELLOW}========== 修改SSH端口 ==========${PLAIN}"
             # 输入新端口
@@ -143,6 +144,33 @@ EOF
             echo -e "${GREEN}SSH端口修改成功！新端口：$SSH_PORT${PLAIN}"
             echo -e "${YELLOW}请使用新端口连接SSH！${PLAIN}"
             sleep 3
+            menu
+            ;;
+        7)  # 新增：一键开启BBR
+            clear
+            echo -e "${YELLOW}========== 开启BBR加速 ==========${PLAIN}"
+            echo -e "\n正在配置BBR参数..."
+            
+            # 写入配置（去重避免重复添加）
+            sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
+            sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
+            
+            echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+            
+            # 加载配置
+            sysctl -p
+            
+            echo -e "\n${GREEN}BBR 配置已生效！${PLAIN}"
+            echo -e "\n${YELLOW}========== 查看BBR状态 ==========${PLAIN}"
+            # 查看可用拥塞控制算法
+            sysctl net.ipv4.tcp_available_congestion_control
+            # 查看BBR模块
+            lsmod | grep bbr
+            
+            echo -e "\n${GREEN}BBR 开启完成！${PLAIN}"
+            echo -e "${YELLOW}服务器网络加速已生效！${PLAIN}"
+            sleep 5
             menu
             ;;
         0)
