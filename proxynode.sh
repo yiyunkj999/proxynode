@@ -16,9 +16,10 @@ menu() {
     echo -e "${YELLOW} 3.${PLAIN} 开启Docker的IPv6"
     echo -e "${YELLOW} 4.${PLAIN} 安装Proxynode节点"
     echo -e "${YELLOW} 5.${PLAIN} 查看Proxynode日志"
+    echo -e "${YELLOW} 6.${PLAIN} 设置服务器SSH端口"
     echo -e "${YELLOW} 0.${PLAIN} 退出菜单"
     echo ""
-    echo -n -e "请选择操作 [0-5]："
+    echo -n -e "请选择操作 [0-6]："  # 修改范围为0-6
     read -r num
 
     case "$num" in
@@ -108,6 +109,40 @@ EOF
         5)
             echo -e "\n${YELLOW}实时日志（按 Ctrl+C 退出）${PLAIN}"
             docker logs -f proxynode
+            menu
+            ;;
+        6)  # 新增：修改SSH端口
+            clear
+            echo -e "${YELLOW}========== 修改SSH端口 ==========${PLAIN}"
+            # 输入新端口
+            read -p "请输入新的SSH端口(1-65535)：" SSH_PORT
+            # 端口校验
+            if [[ -z "$SSH_PORT" || ! "$SSH_PORT" =~ ^[0-9]+$ || "$SSH_PORT" -lt 1 || "$SSH_PORT" -gt 65535 ]]; then
+                echo -e "${RED}错误：端口必须是1-65535之间的数字！${PLAIN}"
+                sleep 2
+                menu
+            fi
+
+            # 修改SSH配置文件
+            sed -i.bak -E "s/^#?Port [0-9]+/Port $SSH_PORT/" /etc/ssh/sshd_config
+            # 确保没有重复Port配置
+            sed -i '/^Port/!b;:a;N;/.*/ba' /etc/ssh/sshd_config
+
+            # 防火墙放行端口（适配firewalld/ufw）
+            if command -v firewall-cmd >/dev/null 2>&1; then
+                firewall-cmd --permanent --add-port="$SSH_PORT"/tcp
+                firewall-cmd --reload
+            elif command -v ufw >/dev/null 2>&1; then
+                ufw allow "$SSH_PORT"/tcp
+                ufw reload
+            fi
+
+            # 重启SSH服务
+            systemctl restart sshd || systemctl restart ssh
+
+            echo -e "${GREEN}SSH端口修改成功！新端口：$SSH_PORT${PLAIN}"
+            echo -e "${YELLOW}请使用新端口连接SSH！${PLAIN}"
+            sleep 3
             menu
             ;;
         0)
