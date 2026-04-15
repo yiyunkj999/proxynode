@@ -16,8 +16,8 @@ menu() {
     echo -e "${YELLOW} 3.${PLAIN} 开启Docker的IPv6"
     echo -e "${YELLOW} 4.${PLAIN} 安装Proxynode节点"
     echo -e "${YELLOW} 5.${PLAIN} 查看Proxynode日志"
-    echo -e "${YELLOW} 6.${PLAIN} 修改自定义SSH端口"
-    echo -e "${YELLOW} 7.${PLAIN} 一键开启BBR加速"  # 新增菜单7
+    echo -e "${YELLOW} 6.${PLAIN} 自定义SSH端口"
+    echo -e "${YELLOW} 7.${PLAIN} 开启BBR加速"
     echo -e "${YELLOW} 0.${PLAIN} 退出菜单"
     echo ""
     echo -n -e "请选择操作 [0-7]："  # 修改范围为0-7
