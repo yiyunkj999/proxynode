@@ -99,7 +99,6 @@ EOF
               --log-opt max-size=2m \
               --log-opt max-file=1 \
               -p "${PORT}:8080/tcp" \
-              -p "${PORT}:8080/udp" \
               yiyunkj888/proxynode:v1.0
               
             echo -e "${GREEN}proxynode 启动成功！映射端口：${PORT}${PLAIN}"
