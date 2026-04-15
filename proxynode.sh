@@ -53,15 +53,26 @@ EOF
             ;;
         4)
             docker rm -f proxynode >/dev/null 2>&1
-            echo -e "\n${YELLOW}正在启动 proxynode...${PLAIN}"
+            echo -e "\n${YELLOW}========== Proxynode 端口配置 ==========${PLAIN}"
+            echo -n -e "请输入需要映射的本地端口(默认 80)："
+            read -r PORT
+            # 如果未输入，使用默认端口2334
+            [[ -z "$PORT" ]] && PORT="80"
+            # 校验端口是否为数字
+            if ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
+                echo -e "${RED}错误：端口必须是纯数字！${PLAIN}"
+                sleep 2
+                menu
+            fi
+            echo -e "\n${YELLOW}正在启动 proxynode，映射端口：${PORT}${PLAIN}"
             docker run -d \
               --name proxynode \
-              --net host \
               --restart always \
               --log-opt max-size=2m \
               --log-opt max-file=1 \
+              -p "${PORT}:8080/tcp" \
               yiyunkj888/proxynode:v1.0
-            echo -e "${GREEN}启动成功！${PLAIN}"
+            echo -e "${GREEN}启动成功！映射端口：${PORT}${PLAIN}"
             sleep 2
             menu
             ;;
