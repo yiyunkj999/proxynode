@@ -11,16 +11,14 @@ menu() {
     echo -e "${GREEN}              proxynode 管理菜单${PLAIN}"
     echo -e "${GREEN}============================================${PLAIN}"
     echo ""
-    echo -e "${YELLOW} 1.${PLAIN} 更换系统源"
-    echo -e "${YELLOW} 2.${PLAIN} 安装 Docker"
-    echo -e "${YELLOW} 3.${PLAIN} 配置 Docker IPv6"
-    echo -e "${YELLOW} 4.${PLAIN} 启动 proxynode 容器"
+    echo -e "${YELLOW} 1.${PLAIN} 更换软件源"
+    echo -e "${YELLOW} 2.${PLAIN} 安装Docker"
+    echo -e "${YELLOW} 3.${PLAIN} 开启Docker的IPv6"
+    echo -e "${YELLOW} 4.${PLAIN} 安装Proxynode节点"
     echo -e "${YELLOW} 5.${PLAIN} 查看容器日志"
-    echo -e "${YELLOW} 6.${PLAIN} 重启容器"
-    echo -e "${YELLOW} 7.${PLAIN} 停止容器"
     echo -e "${YELLOW} 0.${PLAIN} 退出"
     echo ""
-    echo -n -e "请选择操作 [0-7]："
+    echo -n -e "请选择操作 [0-5]："
     read -r num
 
     case "$num" in
@@ -70,20 +68,6 @@ EOF
         5)
             echo -e "\n${YELLOW}实时日志（按 Ctrl+C 退出）${PLAIN}"
             docker logs -f proxynode
-            menu
-            ;;
-        6)
-            echo -e "\n${YELLOW}正在重启...${PLAIN}"
-            docker restart proxynode
-            echo -e "${GREEN}重启完成！${PLAIN}"
-            sleep 1
-            menu
-            ;;
-        7)
-            echo -e "\n${YELLOW}正在停止...${PLAIN}"
-            docker stop proxynode
-            echo -e "${GREEN}已停止！${PLAIN}"
-            sleep 1
             menu
             ;;
         0)
