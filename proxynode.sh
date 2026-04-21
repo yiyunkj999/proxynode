@@ -102,7 +102,7 @@ EOF
               --log-opt max-size=2m \
               --log-opt max-file=1 \
               -p "${PORT}:8080/tcp" \
-              yiyunkj888/proxynode:v1.0
+              yiyunkj888/proxynode:latest
               
             echo -e "${GREEN}proxynode 启动成功！映射端口：${PORT}${PLAIN}"
             echo -e "\n按任意键返回菜单..."
