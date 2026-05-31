@@ -64,7 +64,7 @@ echo "⚙️ 自动根据系统内存设置PHP-FPM进程数..."
 # 获取系统总内存(MB)
 TOTAL_MEM=$(free -m | awk '/Mem:/ {print $2}')
 # 系统预留内存(MB) - 给系统和Nginx使用
-RESERVED_MEM=80
+RESERVED_MEM=60
 # 每个PHP进程预估内存占用(MB) - Alpine下PHP8平均约25-30MB，保守取30MB
 PHP_PROCESS_MEM=30
 
