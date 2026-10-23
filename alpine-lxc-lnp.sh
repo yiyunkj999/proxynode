@@ -16,8 +16,7 @@ ALPINE_VERSION=$(cat /etc/alpine-release | cut -d. -f1-2)
 
 # 版本映射表 (Alpine版本 -> 官方源最新PHP8版本)
 case $ALPINE_VERSION in
-    "3.17") PHP_VERSION="81" ;;
-    "3.18") PHP_VERSION="82" ;;
+    "3.17"|"3.18") PHP_VERSION="82" ;;
     "3.19"|"3.20") PHP_VERSION="83" ;;
     *) 
         echo "⚠️  检测到Alpine版本: $ALPINE_VERSION"
