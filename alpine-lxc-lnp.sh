@@ -1,8 +1,8 @@
 #!/bin/sh
 # 自适应Alpine版本的Nginx + PHP8 一键安装脚本 (LXC容器专用)
-# 支持Alpine 3.17-3.20+，自动匹配官方源最新PHP8版本
+# 支持Alpine 3.17-3.24+，自动匹配官方源最新PHP8版本
 # 磁盘占用<100MB，专为1G硬盘LXC容器云优化
-# 已增加：完全禁用所有日志 + 自动根据内存设置PHP-FPM进程数
+# 已增加：完全禁用所有日志 + 自动根据内存设置PHP-FPM进程数(上限300)
 
 echo "============================================="
 echo "  自适应Alpine版本 Nginx + PHP8 一键安装脚本"
@@ -17,7 +17,7 @@ ALPINE_VERSION=$(cat /etc/alpine-release | cut -d. -f1-2)
 # 版本映射表 (Alpine版本 -> 官方源最新PHP8版本)
 case $ALPINE_VERSION in
     "3.17"|"3.18") PHP_VERSION="82" ;;
-    "3.19"|"3.20") PHP_VERSION="83" ;;
+    "3.19"|"3.20"|"3.21"|"3.22"|"3.23"|"3.24") PHP_VERSION="83" ;;
     *) 
         echo "⚠️  检测到Alpine版本: $ALPINE_VERSION"
         echo "⚠️  自动使用最新稳定版PHP8.3 (如安装失败请升级Alpine系统)"
@@ -58,7 +58,7 @@ sed -i 's/^;listen.owner = nobody/listen.owner = nginx/' /etc/php${PHP_VERSION}/
 sed -i 's/^;listen.group = nobody/listen.group = nginx/' /etc/php${PHP_VERSION}/php-fpm.d/www.conf
 sed -i 's/^;listen.mode = 0660/listen.mode = 0660/' /etc/php${PHP_VERSION}/php-fpm.d/www.conf
 
-# 自动根据系统内存设置PHP-FPM进程数
+# 自动根据系统内存设置PHP-FPM进程数 (下限5，上限300)
 echo "⚙️ 自动根据系统内存设置PHP-FPM进程数..."
 # 获取系统总内存(MB)
 TOTAL_MEM=$(free -m | awk '/Mem:/ {print $2}')
@@ -73,13 +73,21 @@ if [ $AVAILABLE_MEM -lt 0 ]; then
     AVAILABLE_MEM=0
 fi
 
-# 计算最大子进程数，最低为5
+# 计算最大子进程数
 MAX_CHILDREN=$((AVAILABLE_MEM / PHP_PROCESS_MEM))
+
+# 下限 5
 if [ $MAX_CHILDREN -lt 5 ]; then
     MAX_CHILDREN=5
 fi
 
-# 计算其他相关参数
+# 上限 300
+if [ $MAX_CHILDREN -gt 300 ]; then
+    echo "⚠️  按内存计算出的 pm.max_children 超过 300，已强制限制为 300"
+    MAX_CHILDREN=300
+fi
+
+# 计算其他相关参数 (基于最终 MAX_CHILDREN)
 START_SERVERS=$((MAX_CHILDREN / 4))
 if [ $START_SERVERS -lt 1 ]; then
     START_SERVERS=1
@@ -90,11 +98,15 @@ MAX_SPARE_SERVERS=$((MAX_CHILDREN / 2))
 if [ $MAX_SPARE_SERVERS -lt 2 ]; then
     MAX_SPARE_SERVERS=2
 fi
+# 防止异常情况下 spare 超过 max_children
+if [ $MAX_SPARE_SERVERS -gt $MAX_CHILDREN ]; then
+    MAX_SPARE_SERVERS=$MAX_CHILDREN
+fi
 
 echo "✅ 系统总内存: ${TOTAL_MEM}MB"
 echo "✅ 预留系统内存: ${RESERVED_MEM}MB"
 echo "✅ 每个PHP进程预估: ${PHP_PROCESS_MEM}MB"
-echo "✅ 设置pm.max_children: ${MAX_CHILDREN}"
+echo "✅ 设置pm.max_children: ${MAX_CHILDREN} (上限300)"
 echo "✅ 设置pm.start_servers: ${START_SERVERS}"
 echo "✅ 设置pm.min_spare_servers: ${MIN_SPARE_SERVERS}"
 echo "✅ 设置pm.max_spare_servers: ${MAX_SPARE_SERVERS}"
@@ -232,7 +244,7 @@ echo ""
 echo "📌 网站根目录：/var/www/html"
 echo "🌐 IP访问地址：http://$CONTAINER_IP"
 echo "🚫 所有Nginx和PHP日志已完全禁用"
-echo "⚙️ PHP-FPM最大进程数：${MAX_CHILDREN} (自动根据内存计算)"
+echo "⚙️ PHP-FPM最大进程数：${MAX_CHILDREN} (自动根据内存计算，上限300)"
 echo ""
 echo "📝 说明："
 echo "  - 所有网站文件请放在 /var/www/html 目录下"
